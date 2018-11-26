@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 
-def getSchoolFromLeague(leagueUrl, gender):
+def getSchoolsFromLeague(leagueUrl, gender):
     tempResponse = requests.get(leagueUrl)
     tempContent = BeautifulSoup(tempResponse.content, "html.parser")
     allLinks = tempContent.find_all('a', href=True)
@@ -9,8 +9,9 @@ def getSchoolFromLeague(leagueUrl, gender):
     for t in allLinks:
         temp = ''.join(t['href'].split())
         if "tfrrs.org/teams" in temp:
-            print(temp)
-    return
+            if "college_" + gender + "_" in temp:
+                schoolLinks.append(temp[temp.index("tfrrs.org/teams") + 16:])
+    return schoolLinks
 
 def getAthletesFromSchool(schoolUrl):
     tempResponse = requests.get(schoolUrl)
@@ -22,18 +23,11 @@ def getAthletesFromSchool(schoolUrl):
         if "tfrrs.org/athletes" in temp:
             athleteLinks.append(temp[temp.index("tfrrs.org/athletes") + 19:])
     return athleteLinks
-    
-    
 
-page_link = 'https://www.tfrrs.org/teams/IA_college_m_Simpson.html'
-page_response = requests.get(page_link)
-page_content = BeautifulSoup(page_response.content, "html.parser")
-textContent = page_content.find_all('a', href=True)
 
-tempLinks = getAthletesFromSchool(page_link)
-
-for t in tempLinks:
-    print(t)
-print("\n")
-getSchoolFromLeague('https://www.tfrrs.org/leagues/1400.html')
+print("Enter a conference or region URL.")
+leagueUrl = input()
+for school in getSchoolsFromLeague(leagueUrl, 'm'):
+    for t in getAthletesFromSchool("http://tfrrs.org/teams/"+school):
+        print(t)
         
